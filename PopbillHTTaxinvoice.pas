@@ -120,6 +120,7 @@ type
                 pageCount       : Integer;
                 message         : String;
                 list            : THomeTaxTIAbbrList;
+                destructor Destroy; override;
         end;
 
 
@@ -206,6 +207,7 @@ type
                 trusteeEmail            : String;
 
                 detailList              : THometaxTIDetailList;
+                destructor Destroy; override;
 
 
         end;
@@ -258,6 +260,27 @@ type
         end;
 
 implementation
+destructor THomeTaxTISearchList.Destroy;
+var
+  I: Integer;
+begin
+  for I := 0 to Length(list)-1 do
+    if Assigned(list[i]) then
+      list[i].Free;
+    SetLength(list, 0);
+    inherited Destroy;
+end;
+
+destructor THomeTaxTaxinvoice.Destroy;
+var
+  I: Integer;
+begin
+  for I := 0 to Length(detailList)-1 do
+    if Assigned(detailList[i]) then
+      detailList[i].Free;
+    SetLength(detailList, 0);
+    inherited Destroy;
+end;
 
 constructor THometaxTIService.Create(LinkID : String; SecretKey : String);
 begin
