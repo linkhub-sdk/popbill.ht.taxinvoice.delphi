@@ -488,6 +488,7 @@ begin
         if jobID = '' then
         begin
                 raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 입력되지 않았습니다.');
+                exit;
         end;
 
 
@@ -505,6 +506,12 @@ var
 begin
 
         responseJson := httpget('/HomeTax/Taxinvoice/JobList',CorpNum,'');
+
+        if responseJson = '[]' then
+        begin
+                raise EPopbillException.Create(-99999999, '작업 요청 목록이 존재하지 않습니다.');
+                exit;
+        end;
 
         try
                 jSons := ParseJsonList(responseJson);
@@ -535,6 +542,7 @@ begin
         if jobID = '' then
         begin
                 raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 입력되지 않았습니다.');
+                exit;
         end;
 
         for i := 0 to High ( DocType ) do
