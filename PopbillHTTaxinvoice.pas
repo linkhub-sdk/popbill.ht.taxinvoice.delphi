@@ -555,7 +555,7 @@ begin
 
         uri := '/HomeTax/Taxinvoice/'+jobID;
         uri := uri + '?Type=' + docTypeList + '&&TaxType=' + taxTypeList;
-        uri := uri + '&&PurPoseType=' + purposeTypeList + '&&TaxRegIDType='+ TaxRegIDType;
+        uri := uri + '&&PurposeType=' + purposeTypeList + '&&TaxRegIDType='+ TaxRegIDType;
         uri := uri + '&&TaxRegID=' + taxRegIDList;
 
         if TaxRegIDYN then begin
@@ -639,7 +639,6 @@ var
         purposeTypeList : String;
         taxRegIDList : String;
         i : integer;
-        jSons : ArrayOfString;
 begin
         if jobID = '' then
         begin
@@ -685,7 +684,7 @@ begin
 
         uri := '/HomeTax/Taxinvoice/'+jobID+'/Summary';
         uri := uri + '?Type=' + docTypeList + '&&TaxType=' + taxTypeList;
-        uri := uri + '&&PurPoseType=' + purposeTypeList + '&&TaxRegIDType='+ TaxRegIDType;
+        uri := uri + '&&PurposeType=' + purposeTypeList + '&&TaxRegIDType='+ TaxRegIDType;
         uri := uri + '&&TaxRegID=' + taxRegIDList;
 
         if TaxRegIDYN then begin
