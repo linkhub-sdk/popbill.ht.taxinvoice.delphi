@@ -249,10 +249,10 @@ type
                 function ListActiveState (CorpNum : string) : THomeTaxTIJobInfoList;
 
                 // 수집결과 조회
-                function Search (CorpNum:string; JobID: String; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : Boolean; Page: Integer; PerPage : Integer; Order: String) : THomeTaxTISearchList;
+                function Search (CorpNum:string; JobID: String; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : String; Page: Integer; PerPage : Integer; Order: String) : THomeTaxTISearchList;
 
                 // 수집결과 요약정보 조회
-                function Summary (CorpNum:string; JobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : Boolean) : TTaxinvoiceSummary;
+                function Summary (CorpNum:string; JobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : String) : TTaxinvoiceSummary;
 
                 // 상세정보 확인 - JSON
                 function GetTaxinvoice (CorpNum:string; NTSConfirmNum:String) :THomeTaxTaxinvoice;
@@ -543,7 +543,7 @@ begin
 end;
 
 
-function THometaxTIService.Search (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : Boolean; Page: Integer; PerPage : Integer; Order: String) : THomeTaxTISearchList;
+function THometaxTIService.Search (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : string; Page: Integer; PerPage : Integer; Order: String) : THomeTaxTISearchList;
 var
         responseJson : string;
         uri : String;
@@ -601,15 +601,19 @@ begin
 
         uri := '/HomeTax/Taxinvoice/'+jobID;
         uri := uri + '?Type=' + docTypeList + '&&TaxType=' + taxTypeList;
-        uri := uri + '&&PurposeType=' + purposeTypeList + '&&TaxRegIDType='+ TaxRegIDType;
+        uri := uri + '&&PurposeType=' + purposeTypeList;
+
+
+        uri := uri + '&&TaxRegIDType='+ TaxRegIDType;
+
+
         uri := uri + '&&TaxRegID=' + taxRegIDList;
 
-        if TaxRegIDYN then begin
-                uri := uri + '&&TaxRegIDYN=1';
-        end else begin
-                uri := uri + '&&TaxRegIDYN=0';
+        if TaxRegIDYN <> '' then
+        begin
+               uri := uri + '&&TaxRegIDYN='+TaxRegIDYN;
         end;
-
+        
         uri := uri + '&&Page=' + IntToStr(Page) + '&&PerPage='+ IntToStr(PerPage);
         uri := uri + '&&Order=' + order;
 
@@ -692,7 +696,7 @@ end;
 
 
 
-function THometaxTIService.Summary (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : Boolean) : TTaxinvoiceSummary;
+function THometaxTIService.Summary (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : string) : TTaxinvoiceSummary;
 var
         responseJson : string;
         uri : String;
@@ -749,10 +753,9 @@ begin
         uri := uri + '&&PurposeType=' + purposeTypeList + '&&TaxRegIDType='+ TaxRegIDType;
         uri := uri + '&&TaxRegID=' + taxRegIDList;
 
-        if TaxRegIDYN then begin
-                uri := uri + '&&TaxRegIDYN=1';
-        end else begin
-                uri := uri + '&&TaxRegIDYN=0';
+        if TaxRegIDYN <> '' then
+        begin
+               uri := uri + '&&TaxRegIDYN='+TaxRegIDYN;
         end;
        
         responseJson := httpget(uri, CorpNum, '');
