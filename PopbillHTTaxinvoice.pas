@@ -86,27 +86,42 @@ type
                 sendDate        : string;
                 taxType         : string;
                 purposeType     : string;
+                supplyCostTotal : string;
+                taxTotal        : string;
+                totalAmount     : string;
+                remark1         : string;
                 modifyYN        : boolean;
+                orgNTSConfirmNum : string;
+
+                purchaseDate    : string;
+                itemName        : string;
+                spec : string;
+                qty : string;
+                unitCost :string;
+                supplyCost      : string;
+                tax             : string;
+                remark          : string;
 
                 invoicerCorpNum : string;
+                invoicerTaxRegID : string;
                 invoicerCorpName        : string;
                 invoicerCEOName : string;
                 invoicerEmail   : string;
 
                 invoiceeCorpNum : string;
                 invoiceeType    : string;
+                invoiceeTaxRegID : string;
                 invoiceeCorpName        : string;
                 invoiceeCEOName : string;
                 invoiceeEmail1  : string;
+                invoiceeEmail2 : string;
 
-                supplyCostTotal : string;
-                taxTotal        : string;
-                totalAmount     : string;
-                
-                purchaseDate    : string;
-                itemName        : string;
-                supplyCost      : string;
-                tax             : string;
+                trusteeCorpNum : string;
+                trusteeTaxRegID : string;
+                trusteeCorpName : string;
+                trusteeCEOName : String;
+                trusteeEmail : string;
+
         end;
 
         THomeTaxTIAbbrList = Array Of THomeTaxTIAbbr;
@@ -620,27 +635,43 @@ begin
                         result.list[i].issueDate := getJsonString (jSons[i], 'issueDate');
                         result.list[i].sendDate := getJsonString (jSons[i], 'sendDate');
                         result.list[i].taxType := getJsonString (jSons[i], 'taxType');
-
                         result.list[i].purposeType := getJsonString (jSons[i], 'purposeType');
-                        result.list[i].modifyYN := getJsonBoolean (jSons[i], 'modifyYN');
-
-                        result.list[i].invoicerCorpName := getJsonString (jSons[i], 'invoicerCorpName');
-                        result.list[i].invoicerCorpNum := getJsonString (jSons[i], 'invoicerCorpNum');
-                        result.list[i].invoicerCEOName := getJsonString (jSons[i], 'invoicerCEOName');
-                        result.list[i].invoicerEmail := getJsonString (jSons[i], 'invoicerEmail');
-                        result.list[i].invoiceeCorpNum := getJsonString (jSons[i], 'invoiceeCorpNum');
-                        result.list[i].invoiceeCorpName := getJsonString (jSons[i], 'invoiceeCorpName');
-                        result.list[i].invoiceeCEOName := getJsonString (jSons[i], 'invoiceeCEOName');
-                        result.list[i].invoiceeEmail1 := getJsonString (jSons[i], 'invoiceeEmail1');
                         result.list[i].supplyCostTotal := getJsonString (jSons[i], 'supplyCostTotal');
                         result.list[i].taxTotal := getJsonString (jSons[i], 'taxTotal');
                         result.list[i].totalAmount := getJsonString (jSons[i], 'totalAmount');
+                        result.list[i].remark1 := getJsonString (jSons[i], 'remark1');
+                        result.list[i].modifyYN := getJsonBoolean (jSons[i], 'modifyYN');
+                        result.list[i].orgNTSConfirmNum := getJsonString (jSons[i], 'orgNTSConfirmNum');
+
                         result.list[i].purchaseDate := getJsonString (jSons[i], 'purchaseDate');
                         result.list[i].itemName := getJsonString (jSons[i], 'itemName');
+                        result.list[i].spec := getJsonString (jSons[i], 'spec');
+                        result.list[i].qty := getJsonString (jSons[i], 'qty');
+                        result.list[i].unitCost := getJsonString (jSons[i], 'unitCost');
                         result.list[i].supplyCost := getJsonString (jSons[i], 'supplyCost');
                         result.list[i].tax := getJsonString (jSons[i], 'tax');
+                        result.list[i].remark := getJsonString (jSons[i], 'remark');
 
-                    
+                        result.list[i].invoicerCorpNum := getJsonString (jSons[i], 'invoicerCorpNum');
+                        result.list[i].invoicerTaxRegID := getJsonString (jSons[i], 'invoicerTaxRegID');
+                        result.list[i].invoicerCorpName := getJsonString (jSons[i], 'invoicerCorpName');
+                        result.list[i].invoicerCEOName := getJsonString (jSons[i], 'invoicerCEOName');
+                        result.list[i].invoicerEmail := getJsonString (jSons[i], 'invoicerEmail');
+
+                        result.list[i].invoiceeCorpNum := getJsonString (jSons[i], 'invoiceeCorpNum');
+                        result.list[i].invoiceeType := getJsonString (jSons[i], 'invoiceeType');
+                        result.list[i].invoiceeTaxRegID := getJsonString (jSons[i], 'invoiceeTaxRegID');
+                        result.list[i].invoiceeCorpName := getJsonString (jSons[i], 'invoiceeCorpName');
+                        result.list[i].invoiceeCEOName := getJsonString (jSons[i], 'invoiceeCEOName');
+                        result.list[i].invoiceeEmail1 := getJsonString (jSons[i], 'invoiceeEmail1');
+                        result.list[i].invoiceeEmail2 := getJsonString (jSons[i], 'invoiceeEmail2');
+
+                        result.list[i].trusteeCorpNum := getJsonString (jSons[i], 'trusteeCorpNum');
+                        result.list[i].trusteeTaxRegID := getJsonString (jSons[i], 'trusteeTaxRegID');
+                        result.list[i].trusteeCorpName := getJsonString (jSons[i], 'trusteeCorpName');
+                        result.list[i].trusteeCEOName := getJsonString (jSons[i], 'trusteeCEOName');
+                        result.list[i].trusteeEmail := getJsonString (jSons[i], 'trusteeEmail');
+                   
                 end;
 
         except on E:Exception do
