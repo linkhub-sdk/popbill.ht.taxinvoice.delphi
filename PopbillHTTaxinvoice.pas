@@ -21,7 +21,7 @@ uses
         Linkhub;
 type
 
-        EnumMgtKeyType = (SELL,BUY,TRUSTEE);
+        EnumQueryType = (SELL,BUY,TRUSTEE);
 
 
         THometaxTIChargeInfo = class
@@ -240,7 +240,7 @@ type
                 function GetChargeInfo (CorpNum : string) : THometaxTIChargeInfo;
                 
                 // 수집 요청
-                function RequestJob (CorpNum : string; MgtKeyType:EnumMgtKeyType; DType: String; SDate: String; EDate :String) : string;
+                function RequestJob (CorpNum : string; queryType:EnumQueryType; DType: String; SDate: String; EDate :String) : string;
 
                 // 수집 상태 확인
                 function GetJobState ( CorpNum : string; jobID : string) : THomeTaxTIJobInfo;
@@ -680,12 +680,12 @@ begin
 
 end;
 
-function THometaxTIService.RequestJob (CorpNum : string;  MgtKeyType:EnumMgtKeyType; DType: String; SDate: String; EDate: String) : string;
+function THometaxTIService.RequestJob (CorpNum : string;  queryType:EnumQueryType; DType: String; SDate: String; EDate: String) : string;
 var
         responseJson : string;
 
 begin
-        responseJson := httppost('/HomeTax/Taxinvoice/'+GetEnumName(TypeInfo(EnumMgtKeyType),integer(MgtKeyType))+'?DType='+DType+'&&SDate='+SDate+'&&EDate='+EDate, CorpNum, '', '', '');
+        responseJson := httppost('/HomeTax/Taxinvoice/'+GetEnumName(TypeInfo(EnumQueryType),integer(queryType))+'?DType='+DType+'&&SDate='+SDate+'&&EDate='+EDate, CorpNum, '', '', '');
         result := getJsonString(responseJson, 'jobID');
 
 end;
