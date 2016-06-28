@@ -500,10 +500,10 @@ var
         responseJson : string;
 
 begin
-        if jobID = '' then
+        if Not ( length ( jobID ) = 18 ) then
         begin
-                raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 입력되지 않았습니다.');
-                exit;
+                raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 올바르지 않습니다.');
+                Exit;
         end;
 
 
@@ -554,10 +554,10 @@ var
         i : integer;
         jSons : ArrayOfString;
 begin
-        if jobID = '' then
+        if Not ( length ( jobID ) = 18 ) then
         begin
-                raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 입력되지 않았습니다.');
-                exit;
+                raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 올바르지 않습니다.');
+                Exit;
         end;
 
         for i := 0 to High ( DocType ) do
@@ -706,9 +706,9 @@ var
         taxRegIDList : String;
         i : integer;
 begin
-        if jobID = '' then
+        if Not ( length ( jobID ) = 18 ) then
         begin
-                raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 입력되지 않았습니다.');
+                raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 올바르지 않습니다.');
                 Exit;
         end;
 
@@ -773,9 +773,9 @@ function THometaxTIService.GetTaxinvoice (CorpNum:string; NTSConfirmNum:String) 
 var
         responseJson : string;
 begin
-        if NTSConfirmNum = '' then
+        if Not ( length ( NTSConfirmNum ) = 24 ) then
         begin
-                raise EPopbillException.Create(-99999999, '국세청 승인번호가 입력되지 않았습니다.');
+                raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
                 Exit;
         end;
 
@@ -788,9 +788,9 @@ function THometaxTIService.GetXML (CorpNum : String; NTSConfirmNum:String ) : TG
 var
         responseJson : String;
 begin
-        if NTSConfirmNum = '' then
+        if  Not ( length ( NTSConfirmNum ) = 24 ) then
         begin
-                raise EPopbillException.Create(-99999999, '국세청 승인번호가 입력되지 않았습니다.');
+                raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
                 Exit;
         end;
         
