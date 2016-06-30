@@ -7,7 +7,8 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2016-06-10
-
+* Updated : 2016-06-30
+*
 * Thanks for your interest. 
 *=================================================================================
 *)
@@ -237,40 +238,61 @@ type
                 constructor Create(LinkID : String; SecretKey : String);
 
                 // 과금 정보 확인
-                function GetChargeInfo (CorpNum : string) : THometaxTIChargeInfo;
-                
+                function GetChargeInfo (CorpNum : string) : THometaxTIChargeInfo; overload;
+                // 과금 정보 확인
+                function GetChargeInfo (CorpNum : string; UserID : String) : THometaxTIChargeInfo; overload;               
+
                 // 수집 요청
-                function RequestJob (CorpNum : string; queryType:EnumQueryType; DType: String; SDate: String; EDate :String) : string;
+                function RequestJob (CorpNum : string; queryType:EnumQueryType; DType: String; SDate: String; EDate :String) : string; overload;
+                // 수집 요청
+                function RequestJob (CorpNum : string; queryType:EnumQueryType; DType: String; SDate: String; EDate :String; UserID:String) : string; overload;
 
                 // 수집 상태 확인
-                function GetJobState ( CorpNum : string; jobID : string) : THomeTaxTIJobInfo;
+                function GetJobState ( CorpNum : string; jobID : string) : THomeTaxTIJobInfo; overload;
+                // 수집 상태 확인
+                function GetJobState ( CorpNum : string; jobID : string; UserID: string) : THomeTaxTIJobInfo; overload;
 
                 // 수집 상태 목록 확인
-                function ListActiveState (CorpNum : string) : THomeTaxTIJobInfoList;
+                function ListActiveState (CorpNum : string) : THomeTaxTIJobInfoList; overload;
+                // 수집 상태 목록 확인
+                function ListActiveState (CorpNum : string; UserID: String) : THomeTaxTIJobInfoList; overload;
 
                 // 수집결과 조회
-                function Search (CorpNum:string; JobID: String; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : String; Page: Integer; PerPage : Integer; Order: String) : THomeTaxTISearchList;
+                function Search (CorpNum:string; JobID: String; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : String; TaxRegIDYN : String; Page: Integer; PerPage : Integer; Order: String) : THomeTaxTISearchList; overload;
+                // 수집결과 조회
+                function Search (CorpNum:string; JobID: String; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : String; TaxRegIDYN : String; Page: Integer; PerPage : Integer; Order: String; UserID: String) : THomeTaxTISearchList; overload;
 
                 // 수집결과 요약정보 조회
-                function Summary (CorpNum:string; JobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : String) : TTaxinvoiceSummary;
+                function Summary (CorpNum:string; JobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : String; TaxRegIDYN : String) : TTaxinvoiceSummary; overload;
+                // 수집결과 요약정보 조회
+                function Summary (CorpNum:string; JobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : String; TaxRegIDYN : String; UserID: String) : TTaxinvoiceSummary; overload;
 
+                
                 // 상세정보 확인 - JSON
-                function GetTaxinvoice (CorpNum:string; NTSConfirmNum:String) :THomeTaxTaxinvoice;
+                function GetTaxinvoice (CorpNum:string; NTSConfirmNum:String) :THomeTaxTaxinvoice; overload;
+                // 상세정보 확인 - JSON
+                function GetTaxinvoice (CorpNum:string; NTSConfirmNum:String; UserID:String) :THomeTaxTaxinvoice; overload;
 
                 // 상세정보 확인 - XML
-                function GetXML (CorpNum : string; NTSConfirmNum:String ) : TGetXMLResponse;
+                function GetXML (CorpNum : string; NTSConfirmNum:String ) : TGetXMLResponse; overload;
+                // 상세정보 확인 - XML
+                function GetXML (CorpNum : string; NTSConfirmNum:String; UserID:String ) : TGetXMLResponse; overload;
 
                 // 정액제 신청 URL
                 function GetFlatRatePopUpURL(CorpNum: string; UserID : String) : string;
 
                 // 정액제 상태 확인
-                function GetFlatRateState (CorpNum : string ) : THometaxTIFlatRate;
+                function GetFlatRateState (CorpNum : string ) : THometaxTIFlatRate; overload;
+                // 정액제 상태 확인
+                function GetFlatRateState (CorpNum : string; UserID: String ) : THometaxTIFlatRate; overload;                
 
                 // 홈택스 공인인증서 등록 URL
                 function GetCertificatePopUpURL(CorpNum: string; UserID : String) : string;
 
                 // 홈택스 공인인증서 만료일자 확인
-                function GetCertificateExpireDate (CorpNum : string) : string;
+                function GetCertificateExpireDate (CorpNum : string) : string; overload;
+                // 홈택스 공인인증서 만료일자 확인
+                function GetCertificateExpireDate (CorpNum : string; UserID: String) : string; overload;
 
         end;
 
@@ -439,24 +461,34 @@ begin
         result := getJSonString(responseJson,'url');
 end;
 
-
 function THometaxTIService.GetCertificateExpireDate(CorpNum: string) : string;
+begin
+        result := GetCertificateExpireDate(CorpNum, '');
+end;
+
+function THometaxTIService.GetCertificateExpireDate(CorpNum: string; UserID:String) : string;
 var
         responseJson : String;
 begin
 
-        responseJson := httpget('/HomeTax/Taxinvoice/CertInfo',CorpNum,'');
+        responseJson := httpget('/HomeTax/Taxinvoice/CertInfo',CorpNum,UserID);
 
         result := getJSonString(responseJson,'certificateExpiration');
 end;
 
 
-
 function THometaxTIService.GetChargeInfo (CorpNum : string) : THometaxTIChargeInfo;
+
+begin
+        Result := GetChargeInfo(CorpNum, '');
+end;
+
+
+function THometaxTIService.GetChargeInfo (CorpNum : string; UserID:string) : THometaxTIChargeInfo;
 var
         responseJson : String;
 begin
-        responseJson := httpget('/HomeTax/Taxinvoice/ChargeInfo',CorpNum,'');
+        responseJson := httpget('/HomeTax/Taxinvoice/ChargeInfo',CorpNum,UserID);
 
         try
                 result := THometaxTIChargeInfo.Create;
@@ -469,13 +501,18 @@ begin
                 raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
         end;
 end;
-//End Of Unit.
+
 
 function THometaxTIService.GetFlatRateState (CorpNum : string ) : THometaxTIFlatRate;
+begin
+        result := GetFlatRateState(CorpNum, '')
+end;
+
+function THometaxTIService.GetFlatRateState (CorpNum : string; UserID: string) : THometaxTIFlatRate;
 var
         responseJson : String;
 begin
-        responseJson := httpget('/HomeTax/Taxinvoice/Contract',CorpNum, '');
+        responseJson := httpget('/HomeTax/Taxinvoice/Contract',CorpNum, UserID);
        
         try
                 result := THometaxTIFlatRate.Create;
@@ -495,7 +532,13 @@ begin
 
 end;
 
+
 function THometaxTIService.GetJobState ( CorpNum : string; jobID : string) : THomeTaxTIJobInfo;
+begin
+        result := GetJobState(CorpNum, jobID, '')
+end;
+
+function THometaxTIService.GetJobState ( CorpNum : string; jobID : string; UserID :string) : THomeTaxTIJobInfo;
 var
         responseJson : string;
 
@@ -507,20 +550,25 @@ begin
         end;
 
 
-        responseJson := httpget('/HomeTax/Taxinvoice/'+ jobID + '/State', CorpNum, '');
+        responseJson := httpget('/HomeTax/Taxinvoice/'+ jobID + '/State', CorpNum, UserID);
 
         result := jsonToTHometaxTIJobInfo ( responseJson ) ;
 end;
 
 
 function THometaxTIService.ListActiveState (CorpNum : string) : THomeTaxTIJobInfoList;
+begin
+        result := ListActiveState(CorpNum, '');
+end;
+
+function THometaxTIService.ListActiveState (CorpNum : string; UserID:string) : THomeTaxTIJobInfoList;
 var
         responseJson : string;
         jSons : ArrayOfString;
         i : Integer;
 begin
 
-        responseJson := httpget('/HomeTax/Taxinvoice/JobList',CorpNum,'');
+        responseJson := httpget('/HomeTax/Taxinvoice/JobList', CorpNum, UserID);
 
         if responseJson = '[]' then
         begin
@@ -542,15 +590,18 @@ begin
         end;
 end;
 
+function THometaxTIService.Search (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : String; TaxRegIDYN : string; Page: Integer; PerPage : Integer; Order: String) : THomeTaxTISearchList;
+begin
+        result := Search(CorpNum, jobID, DocType, TaxType, PurposeType, TaxRegIDType, TaxRegID, TaxRegIDYN, Page, PerPage, ORder, '')
+end;
 
-function THometaxTIService.Search (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : string; Page: Integer; PerPage : Integer; Order: String) : THomeTaxTISearchList;
+function THometaxTIService.Search (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : String; TaxRegIDYN : string; Page: Integer; PerPage : Integer; Order: String; UserID: string) : THomeTaxTISearchList;
 var
         responseJson : string;
         uri : String;
         docTypeList : String;
         taxTypeList : String;
         purposeTypeList : String;
-        taxRegIDList : String;
         i : integer;
         jSons : ArrayOfString;
 begin
@@ -587,15 +638,7 @@ begin
                 purposeTypeList := purposeTypeList + ',';
         end;
 
-        for i := 0 to High ( TaxRegID ) do
-        begin
-                if taxRegID[i] <> '' then
-                taxRegIDList := taxRegIDList + TaxRegID[i];
-
-                if i <> High(TaxRegID) then
-                taxRegIDList := taxRegIDList + ',';
-        end;                                                     
-
+                                          
         if Page < 1 then page := 1;
         if PerPage < 1 then PerPage := 500;
 
@@ -606,8 +649,10 @@ begin
 
         uri := uri + '&&TaxRegIDType='+ TaxRegIDType;
 
-
-        uri := uri + '&&TaxRegID=' + taxRegIDList;
+        if TaxRegID <> '' then
+        begin
+                uri := uri + '&&TaxRegID='+TaxRegID;
+        end;         
 
         if TaxRegIDYN <> '' then
         begin
@@ -617,7 +662,7 @@ begin
         uri := uri + '&&Page=' + IntToStr(Page) + '&&PerPage='+ IntToStr(PerPage);
         uri := uri + '&&Order=' + order;
 
-        responseJson := httpget(uri, CorpNum, '');
+        responseJson := httpget(uri, CorpNum, UserID);
         
         result := THomeTaxTiSearchList.Create;
 
@@ -685,25 +730,32 @@ begin
 end;
 
 function THometaxTIService.RequestJob (CorpNum : string;  queryType:EnumQueryType; DType: String; SDate: String; EDate: String) : string;
+begin
+        result := RequestJob(CorpNum,queryType,DType,SDate,EDate,'');
+end;
+
+
+function THometaxTIService.RequestJob (CorpNum : string;  queryType:EnumQueryType; DType: String; SDate: String; EDate: String; UserID: String) : string;
 var
         responseJson : string;
 
 begin
-        responseJson := httppost('/HomeTax/Taxinvoice/'+GetEnumName(TypeInfo(EnumQueryType),integer(queryType))+'?DType='+DType+'&&SDate='+SDate+'&&EDate='+EDate, CorpNum, '', '', '');
+        responseJson := httppost('/HomeTax/Taxinvoice/'+GetEnumName(TypeInfo(EnumQueryType),integer(queryType))+'?DType='+DType+'&&SDate='+SDate+'&&EDate='+EDate, CorpNum, UserID, '', '');
         result := getJsonString(responseJson, 'jobID');
-
 end;
 
+function THometaxTIService.Summary (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : String; TaxRegIDYN : string) : TTaxinvoiceSummary;
+begin
+        result := Summary(CorpNum, JobID, DocType, TaxType, PurposeType, TaxRegIDType, TaxRegID, TaxRegIDYN, '');
+end;
 
-
-function THometaxTIService.Summary (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : Array Of String; TaxRegIDYN : string) : TTaxinvoiceSummary;
+function THometaxTIService.Summary (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : String; TaxRegIDYN : string; UserID: string) : TTaxinvoiceSummary;
 var
         responseJson : string;
         uri : String;
         docTypeList : String;
         taxTypeList : String;
         purposeTypeList : String;
-        taxRegIDList : String;
         i : integer;
 begin
         if Not ( length ( jobID ) = 18 ) then
@@ -739,26 +791,23 @@ begin
                 purposeTypeList := purposeTypeList + ',';
         end;
 
-        for i := 0 to High ( TaxRegID ) do
-        begin
-                if taxRegID[i] <> '' then
-                taxRegIDList := taxRegIDList + TaxRegID[i];
 
-                if i <> High(TaxRegID) then
-                taxRegIDList := taxRegIDList + ',';
-        end;                                                     
 
         uri := '/HomeTax/Taxinvoice/'+jobID+'/Summary';
         uri := uri + '?Type=' + docTypeList + '&&TaxType=' + taxTypeList;
         uri := uri + '&&PurposeType=' + purposeTypeList + '&&TaxRegIDType='+ TaxRegIDType;
-        uri := uri + '&&TaxRegID=' + taxRegIDList;
+        
+        if TaxRegID <> '' then
+        begin
+                uri := uri + '&&TaxRegID='+TaxRegID;
+        end;         
 
         if TaxRegIDYN <> '' then
         begin
                uri := uri + '&&TaxRegIDYN='+TaxRegIDYN;
         end;
-       
-        responseJson := httpget(uri, CorpNum, '');
+
+        responseJson := httpget(uri, CorpNum, UserID);
         
         result := TTaxinvoiceSummary.Create;
 
@@ -770,6 +819,11 @@ end;
 
 
 function THometaxTIService.GetTaxinvoice (CorpNum:string; NTSConfirmNum:String) :THomeTaxTaxinvoice;
+begin
+        result := GetTaxinvoice(CorpNum, NTSConfirmNum, '');
+end;
+
+function THometaxTIService.GetTaxinvoice (CorpNum:string; NTSConfirmNum:String; UserID:String) :THomeTaxTaxinvoice;
 var
         responseJson : string;
 begin
@@ -779,12 +833,17 @@ begin
                 Exit;
         end;
 
-        responseJson := httpget('/HomeTax/Taxinvoice/'+NTSConfirmNum, CorpNum, '');
+        responseJson := httpget('/HomeTax/Taxinvoice/'+NTSConfirmNum, CorpNum, UserID);
 
         result := jsonToTHometaxTaxinvoice(responseJson);
 end;
 
 function THometaxTIService.GetXML (CorpNum : String; NTSConfirmNum:String ) : TGetXMLResponse;
+begin
+        result := GetXML(CorpNum, NTSConfirmNUm, '');
+end;
+
+function THometaxTIService.GetXML (CorpNum : String; NTSConfirmNum:String; UserID:String ) : TGetXMLResponse;
 var
         responseJson : String;
 begin
@@ -794,7 +853,7 @@ begin
                 Exit;
         end;
         
-        responseJson := httpget('/HomeTax/Taxinvoice/'+NTSConfirmNum+'?T=xml', CorpNum, '');
+        responseJson := httpget('/HomeTax/Taxinvoice/'+NTSConfirmNum+'?T=xml', CorpNum, UserID);
        
         try
                 result := TGetXMLResponse.Create;
@@ -807,7 +866,6 @@ begin
         end;                                                                                             
 
 end;
-
 
 
 
