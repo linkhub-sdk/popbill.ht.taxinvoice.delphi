@@ -7,7 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2016-06-10
-* Updated : 2017-02-23
+* Updated : 2017-08-30
 *
 * Thanks for your interest. 
 *=================================================================================
@@ -122,6 +122,9 @@ type
                 trusteeCorpName : string;
                 trusteeCEOName : String;
                 trusteeEmail : string;
+
+                // 매출/매입 구분 추가 - 2017/08/30
+                invoiceType : string;
 
         end;
 
@@ -691,6 +694,7 @@ begin
                         result.list[i].remark1 := getJsonString (jSons[i], 'remark1');
                         result.list[i].modifyYN := getJsonBoolean (jSons[i], 'modifyYN');
                         result.list[i].orgNTSConfirmNum := getJsonString (jSons[i], 'orgNTSConfirmNum');
+                        result.list[i].invoiceType := getJsonString (jSons[i], 'invoiceType');
 
                         result.list[i].purchaseDate := getJsonString (jSons[i], 'purchaseDate');
                         result.list[i].itemName := getJsonString (jSons[i], 'itemName');
