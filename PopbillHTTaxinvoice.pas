@@ -287,7 +287,7 @@ type
                 // 정액제 상태 확인
                 function GetFlatRateState (CorpNum : string ) : THometaxTIFlatRate; overload;
                 // 정액제 상태 확인
-                function GetFlatRateState (CorpNum : string; UserID: String ) : THometaxTIFlatRate; overload;                
+                function GetFlatRateState (CorpNum : string; UserID: String ) : THometaxTIFlatRate; overload;
 
                 // 홈택스 공인인증서 등록 URL
                 function GetCertificatePopUpURL(CorpNum: string; UserID : String = '') : string;
@@ -296,6 +296,9 @@ type
                 function GetCertificateExpireDate (CorpNum : string) : string; overload;
                 // 홈택스 공인인증서 만료일자 확인
                 function GetCertificateExpireDate (CorpNum : string; UserID: String) : string; overload;
+
+                // 홈택스 전자세금계산서 보기 팝업 URL
+                function GetPopUpURL(CorpNum : String; NTSConfirmNum : String; UserID : String = '') : String;
 
         end;
 
@@ -856,22 +859,34 @@ begin
                 raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
                 Exit;
         end;
-        
+
         responseJson := httpget('/HomeTax/Taxinvoice/'+NTSConfirmNum+'?T=xml', CorpNum, UserID);
-       
+
         try
                 result := TGetXMLResponse.Create;
                 result.ResultCode := getJSonInteger(responseJson, 'ResultCode');
                 result.Message := getJSonString(responseJson, 'Message');
                 result.retObject := getJSonString(responseJson, 'retObject');
-                            
+
         except on E:Exception do
                 raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
-        end;                                                                                             
+        end;
 
 end;
 
+function THometaxTIService.GetPopUpURL(CorpNum, NTSConfirmNum, UserID: String): String;
+var
+        responseJson : String;
+begin
+        if  Not ( length ( NTSConfirmNum ) = 24 ) then
+        begin
+                raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
+                Exit;
+        end;
 
+        responseJson := httpget('/HomeTax/Taxinvoice/' + NTSConfirmNum + '/PopUp', CorpNum, UserID);
 
+        result := getJSonString(responseJson,'url');
+end;
 
 end.
