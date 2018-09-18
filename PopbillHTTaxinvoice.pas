@@ -7,8 +7,8 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2016-06-10
-* Updated : 2017-08-30
-*
+* Contributor : Kim Eunhye (code@linkhub.co.kr)
+* Updated : 2018-09-18
 * Thanks for your interest. 
 *=================================================================================
 *)
@@ -300,6 +300,20 @@ type
                 // 홈택스 전자세금계산서 보기 팝업 URL
                 function GetPopUpURL(CorpNum : String; NTSConfirmNum : String; UserID : String = '') : String;
 
+                // 홈택스 공인인증서 로그인 테스트
+                function CheckCertValidation(CorpNum : String; UserID : String = '') : TResponse;
+
+                // 부서사용자 계정등록
+                function RegistDeptUser(CorpNum : String; DeptUserID : String; DeptUserPWD : String; UserID : String = '') : TResponse;
+
+                // 부서사용자 등록정보 확인
+                function CheckDeptUser(CorpNum : String; UserID : String = '') : TResponse;
+
+                // 부서사용자 로그인 테스트
+                function CheckLoginDeptUser(CorpNum : String; UserID : String = '') : TResponse;
+
+                // 부서사용자 등록정보 삭제
+                function DeleteDeptUser(CorpNum : String; UserID : String = '') : TResponse;
         end;
 
 implementation
@@ -887,6 +901,165 @@ begin
         responseJson := httpget('/HomeTax/Taxinvoice/' + NTSConfirmNum + '/PopUp', CorpNum, UserID);
 
         result := getJSonString(responseJson,'url');
+end;
+
+function THometaxTIService.CheckCertValidation(CorpNum, UserID: String): TResponse;
+var
+  responseJson : String;
+begin
+        if Trim(CorpNum) = '' then
+        begin
+                result.code := -99999999;
+                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                Exit;
+        end;
+
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice/CertCheck', CorpNum, UserID);
+
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.Message);
+                        end;
+
+                        result.code := le.code;
+                        result.message := le.Message;
+                end;
+        end;
+end;
+
+function THometaxTIService.RegistDeptUser(CorpNum, DeptUserID, DeptUserPWD, UserID: String): TResponse;
+var
+  requestJson, responseJson : String;
+begin
+        if Trim(CorpNum) = '' then
+        begin
+                result.code := -99999999;
+                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                Exit;
+        end;
+        if Trim(DeptUserID) = '' then
+        begin
+                result.code := -99999999;
+                result.message := '홈택스 부서사용자 계정 아이디가 입력되지 않았습니다.';
+                Exit;
+        end;
+        if Trim(DeptUserPWD) = '' then
+        begin
+                result.code := -99999999;
+                result.message := '홈택스 부서사용자 계정 비밀번호가 입력되지 않았습니다.';
+                Exit;
+        end;
+
+        try
+                requestJson := '{"id":"'+EscapeString(DeptUserID)+'","pwd":"'+EscapeString(DeptUserPWD)+'"}';
+
+                responseJson := httppost('/HomeTax/Taxinvoice/DeptUser', CorpNum, UserID, requestJson, '');
+
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.Message);
+                        end;
+                        
+                        result.code := le.code;
+                        result.message := le.Message;
+                end;
+        end;
+end;
+
+function THometaxTIService.CheckDeptUser(CorpNum, UserID: String): TResponse;
+var
+  responseJson : String;
+begin
+        if Trim(CorpNum) = '' then
+        begin
+                result.code := -99999999;
+                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                Exit;
+        end;
+
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice/DeptUser', CorpNum, UserID);
+
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.Message);
+                        end;
+
+                        result.code := le.code;
+                        result.message := le.Message;
+                end;
+        end;
+end;
+
+function THometaxTIService.CheckLoginDeptUser(CorpNum, UserID: String): TResponse;
+var
+  responseJson : String;
+begin
+        if Trim(CorpNum) = '' then
+        begin
+                result.code := -99999999;
+                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                Exit;
+        end;
+
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice/DeptUser/Check', CorpNum, UserID);
+
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.Message);
+                        end;
+
+                        result.code := le.code;
+                        result.message := le.Message;
+                end;
+        end;
+end;
+
+function THometaxTIService.DeleteDeptUser(CorpNum, UserID: String): TResponse;
+var
+  responseJson : String;
+begin
+        if Trim(CorpNum) = '' then
+        begin
+                result.code := -99999999;
+                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                Exit;
+        end;
+
+        try
+                responseJson := httppost('/HomeTax/Taxinvoice/DeptUser', CorpNum, UserID, '', 'DELETE');
+
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.Message);
+                        end;
+                        
+                        result.code := le.code;
+                        result.message := le.Message;
+                end;
+        end;
 end;
 
 end.
