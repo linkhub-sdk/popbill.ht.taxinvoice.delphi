@@ -7,8 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2016-06-10
-* Contributor : Kim Eunhye (code@linkhub.co.kr)
-* Updated : 2018-09-18
+* Updated : 2019-03-22
 * Thanks for your interest. 
 *=================================================================================
 *)
@@ -454,8 +453,21 @@ begin
                         result.detailList[i].remark                := getJSonString(jSons[i],'remark');
                 end;
 
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+        except
+                on E:Exception do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                exit;
+                        end
+                        else
+                        begin
+                                result := THomeTaxTaxinvoice.Create;
+                                setLastErrCode(-99999999);
+                                setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                exit;
+                        end;
+                end;
         end;
 end;
 
@@ -465,9 +477,18 @@ var
         responseJson : String;
 begin
 
-        responseJson := httpget('/HomeTax/Taxinvoice?TG=CHRG',CorpNum,UserID);
-
-        result := getJSonString(responseJson,'url');
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice?TG=CHRG',CorpNum,UserID);
+                result := getJSonString(responseJson,'url');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;
+                end;
+        end;
 end;
 
 
@@ -476,9 +497,18 @@ var
         responseJson : String;
 begin
 
-        responseJson := httpget('/HomeTax/Taxinvoice?TG=CERT',CorpNum,UserID);
-
-        result := getJSonString(responseJson,'url');
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice?TG=CERT',CorpNum,UserID);
+                result := getJSonString(responseJson,'url');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;
+                end;
+        end;                
 end;
 
 function THometaxTIService.GetCertificateExpireDate(CorpNum: string) : string;
@@ -490,10 +520,18 @@ function THometaxTIService.GetCertificateExpireDate(CorpNum: string; UserID:Stri
 var
         responseJson : String;
 begin
-
-        responseJson := httpget('/HomeTax/Taxinvoice/CertInfo',CorpNum,UserID);
-
-        result := getJSonString(responseJson,'certificateExpiration');
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice/CertInfo',CorpNum,UserID);
+                result := getJSonString(responseJson,'certificateExpiration');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;                        
+                end;
+        end;
 end;
 
 
@@ -508,17 +546,46 @@ function THometaxTIService.GetChargeInfo (CorpNum : string; UserID:string) : THo
 var
         responseJson : String;
 begin
-        responseJson := httpget('/HomeTax/Taxinvoice/ChargeInfo',CorpNum,UserID);
 
         try
-                result := THometaxTIChargeInfo.Create;
+                responseJson := httpget('/HomeTax/Taxinvoice/ChargeInfo',CorpNum,UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;
+                end;
+        end;
 
-                result.unitCost := getJSonString(responseJson, 'unitCost');
-                result.chargeMethod := getJSonString(responseJson, 'chargeMethod');
-                result.rateSystem := getJSonString(responseJson, 'rateSystem');
-
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin        
+                try
+                        result := THometaxTIChargeInfo.Create;
+                        result.unitCost := getJSonString(responseJson, 'unitCost');
+                        result.chargeMethod := getJSonString(responseJson, 'chargeMethod');
+                        result.rateSystem := getJSonString(responseJson, 'rateSystem');
+                except
+                        on E:Exception do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end
+                                else
+                                begin
+                                        result := THometaxTIChargeInfo.Create();
+                                        setLastErrCode(-99999999);
+                                        setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end;
+                        end;
+                end;
         end;
 end;
 
@@ -532,22 +599,50 @@ function THometaxTIService.GetFlatRateState (CorpNum : string; UserID: string) :
 var
         responseJson : String;
 begin
-        responseJson := httpget('/HomeTax/Taxinvoice/Contract',CorpNum, UserID);
-       
         try
-                result := THometaxTIFlatRate.Create;
-                result.referenceID := getJSonString(responseJson, 'referenceID');
-                result.contractDT := getJSonString(responseJson, 'contractDT');
-                result.baseDate := getJsonInteger(responseJson, 'baseDate');
-                result.useEndDate := getJSonString(responseJson, 'useEndDate');
-                result.state := getJsonInteger(responseJson, 'state');
-                result.closeRequestYN := getJsonBoolean(responseJson, 'closeRequestYN');
-                result.useRestrictYN := getJsonBoolean(responseJson, 'useRestrictYN');
-                result.closeOnExpired := getJsonBoolean(responseJson, 'closeOnExpired');
-                result.unPaidYN := getJsonBoolean(responseJson, 'unPaidYN');
-                            
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                responseJson := httpget('/HomeTax/Taxinvoice/Contract',CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;
+                end;                
+        end;
+        
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
+                try
+                        result := THometaxTIFlatRate.Create;
+                        result.referenceID := getJSonString(responseJson, 'referenceID');
+                        result.contractDT := getJSonString(responseJson, 'contractDT');
+                        result.baseDate := getJsonInteger(responseJson, 'baseDate');
+                        result.useEndDate := getJSonString(responseJson, 'useEndDate');
+                        result.state := getJsonInteger(responseJson, 'state');
+                        result.closeRequestYN := getJsonBoolean(responseJson, 'closeRequestYN');
+                        result.useRestrictYN := getJsonBoolean(responseJson, 'useRestrictYN');
+                        result.closeOnExpired := getJsonBoolean(responseJson, 'closeOnExpired');
+                        result.unPaidYN := getJsonBoolean(responseJson, 'unPaidYN');
+                except
+                        on E:Exception do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end
+                                else
+                                begin
+                                        result := THometaxTIFlatRate.Create;
+                                        setLastErrCode(-99999999);
+                                        setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                end;
+                        end;
+                end;
         end;
 
 end;
@@ -565,14 +660,40 @@ var
 begin
         if Not ( length ( jobID ) = 18 ) then
         begin
-                raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 올바르지 않습니다.');
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 올바르지 않습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result := THomeTaxTIJobInfo.Create;
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('작업아이디(jobID)가 올바르지 않습니다.');
+                        exit;
+                end;
         end;
 
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice/'+ jobID + '/State', CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;
+                end;
+        end;
 
-        responseJson := httpget('/HomeTax/Taxinvoice/'+ jobID + '/State', CorpNum, UserID);
-
-        result := jsonToTHometaxTIJobInfo ( responseJson ) ;
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
+                result := jsonToTHometaxTIJobInfo ( responseJson ) ;
+        end;
 end;
 
 
@@ -588,25 +709,69 @@ var
         i : Integer;
 begin
 
-        responseJson := httpget('/HomeTax/Taxinvoice/JobList', CorpNum, UserID);
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice/JobList', CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                setLength(result,0);
+                                exit;
+                        end;
+                end;
+        end;
 
         if responseJson = '[]' then
         begin
-                raise EPopbillException.Create(-99999999, '작업 요청 목록이 존재하지 않습니다.');
-                exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '작업 요청 목록이 존재하지 않습니다.');
+                        exit;
+                end
+                else
+                begin
+                        setLength(result,0);
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('작업 요청 목록이 존재하지 않습니다.');
+                        exit;
+                end;
         end;
 
-        try
-                jSons := ParseJsonList(responseJson);
-                SetLength(result,Length(jSons));
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
+                try
+                        jSons := ParseJsonList(responseJson);
+                        SetLength(result,Length(jSons));
 
-                for i:= 0 to Length(jSons) -1 do
-                begin
-                        result[i] := jsonToTHometaxTIJobInfo(jSons[i]);
+                        for i:= 0 to Length(jSons) -1 do
+                        begin
+                                result[i] := jsonToTHometaxTIJobInfo(jSons[i]);
+                        end;
+                except
+                        on E:Exception do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end
+                                else
+                                begin
+                                        setLength(result,0);
+                                        setLastErrCode(-99999999);
+                                        setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end;
+                        end;
                 end;
-
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,' 결과처리 실패.[Malformed Json]');
         end;
 end;
 
@@ -627,8 +792,19 @@ var
 begin
         if Not ( length ( jobID ) = 18 ) then
         begin
-                raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 올바르지 않습니다.');
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 올바르지 않습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result := THomeTaxTISearchList.Create;
+                        result.code := -99999999;
+                        result.message := '작업아이디(jobID)가 올바르지 않습니다.';
+                        exit;
+                end;
+
         end;
 
         for i := 0 to High ( DocType ) do
@@ -682,72 +858,114 @@ begin
         uri := uri + '&&Page=' + IntToStr(Page) + '&&PerPage='+ IntToStr(PerPage);
         uri := uri + '&&Order=' + order;
 
-        responseJson := httpget(uri, CorpNum, UserID);
-        
-        result := THomeTaxTiSearchList.Create;
-
-        result.code := getJSonInteger(responseJson, 'code');
-        result.total := getJSonInteger(responseJson, 'total');
-        result.perPage := getJSonInteger(responseJson, 'perPage');
-        result.pageNum := getJSonInteger(responseJson, 'pageNum');
-        result.pageCount := getJSonInteger(responseJson, 'pageCount');
-        result.message := getJSonString(responseJson, 'message');
 
         try
-                jSons := getJsonList(responseJson, 'list');
-                SetLength(result.list, Length(jSons));
-                for i:=0 to Length(jSons)-1 do
-                begin
-                        result.list[i] := THomeTaxTIAbbr.Create;
-                        result.list[i].ntsconfirmNum := getJsonString (jSons[i], 'ntsconfirmNum');
-                        result.list[i].writeDate := getJsonString (jSons[i], 'writeDate');
-                        result.list[i].issueDate := getJsonString (jSons[i], 'issueDate');
-                        result.list[i].sendDate := getJsonString (jSons[i], 'sendDate');
-                        result.list[i].taxType := getJsonString (jSons[i], 'taxType');
-                        result.list[i].purposeType := getJsonString (jSons[i], 'purposeType');
-                        result.list[i].supplyCostTotal := getJsonString (jSons[i], 'supplyCostTotal');
-                        result.list[i].taxTotal := getJsonString (jSons[i], 'taxTotal');
-                        result.list[i].totalAmount := getJsonString (jSons[i], 'totalAmount');
-                        result.list[i].remark1 := getJsonString (jSons[i], 'remark1');
-                        result.list[i].modifyYN := getJsonBoolean (jSons[i], 'modifyYN');
-                        result.list[i].orgNTSConfirmNum := getJsonString (jSons[i], 'orgNTSConfirmNum');
-                        result.list[i].invoiceType := getJsonString (jSons[i], 'invoiceType');
-
-                        result.list[i].purchaseDate := getJsonString (jSons[i], 'purchaseDate');
-                        result.list[i].itemName := getJsonString (jSons[i], 'itemName');
-                        result.list[i].spec := getJsonString (jSons[i], 'spec');
-                        result.list[i].qty := getJsonString (jSons[i], 'qty');
-                        result.list[i].unitCost := getJsonString (jSons[i], 'unitCost');
-                        result.list[i].supplyCost := getJsonString (jSons[i], 'supplyCost');
-                        result.list[i].tax := getJsonString (jSons[i], 'tax');
-                        result.list[i].remark := getJsonString (jSons[i], 'remark');
-
-                        result.list[i].invoicerCorpNum := getJsonString (jSons[i], 'invoicerCorpNum');
-                        result.list[i].invoicerTaxRegID := getJsonString (jSons[i], 'invoicerTaxRegID');
-                        result.list[i].invoicerCorpName := getJsonString (jSons[i], 'invoicerCorpName');
-                        result.list[i].invoicerCEOName := getJsonString (jSons[i], 'invoicerCEOName');
-                        result.list[i].invoicerEmail := getJsonString (jSons[i], 'invoicerEmail');
-
-                        result.list[i].invoiceeCorpNum := getJsonString (jSons[i], 'invoiceeCorpNum');
-                        result.list[i].invoiceeType := getJsonString (jSons[i], 'invoiceeType');
-                        result.list[i].invoiceeTaxRegID := getJsonString (jSons[i], 'invoiceeTaxRegID');
-                        result.list[i].invoiceeCorpName := getJsonString (jSons[i], 'invoiceeCorpName');
-                        result.list[i].invoiceeCEOName := getJsonString (jSons[i], 'invoiceeCEOName');
-                        result.list[i].invoiceeEmail1 := getJsonString (jSons[i], 'invoiceeEmail1');
-                        result.list[i].invoiceeEmail2 := getJsonString (jSons[i], 'invoiceeEmail2');
-
-                        result.list[i].trusteeCorpNum := getJsonString (jSons[i], 'trusteeCorpNum');
-                        result.list[i].trusteeTaxRegID := getJsonString (jSons[i], 'trusteeTaxRegID');
-                        result.list[i].trusteeCorpName := getJsonString (jSons[i], 'trusteeCorpName');
-                        result.list[i].trusteeCEOName := getJsonString (jSons[i], 'trusteeCEOName');
-                        result.list[i].trusteeEmail := getJsonString (jSons[i], 'trusteeEmail');
-                   
+                responseJson := httpget(uri, CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result := THomeTaxTISearchList.Create;
+                                result.code := le.code;
+                                result.message := le.message;
+                                exit;
+                        end;
                 end;
-
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
         end;
 
+        if LastErrCode <> 0 then
+        begin
+                result := THomeTaxTISearchList.Create;
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+                exit;
+        end
+        else
+        begin
+        
+                result := THomeTaxTiSearchList.Create;
+
+                result.code := getJSonInteger(responseJson, 'code');
+                result.total := getJSonInteger(responseJson, 'total');
+                result.perPage := getJSonInteger(responseJson, 'perPage');
+                result.pageNum := getJSonInteger(responseJson, 'pageNum');
+                result.pageCount := getJSonInteger(responseJson, 'pageCount');
+                result.message := getJSonString(responseJson, 'message');
+
+                try
+                        jSons := getJsonList(responseJson, 'list');
+                        SetLength(result.list, Length(jSons));
+                        for i:=0 to Length(jSons)-1 do
+                        begin
+                                result.list[i] := THomeTaxTIAbbr.Create;
+                                result.list[i].ntsconfirmNum := getJsonString (jSons[i], 'ntsconfirmNum');
+                                result.list[i].writeDate := getJsonString (jSons[i], 'writeDate');
+                                result.list[i].issueDate := getJsonString (jSons[i], 'issueDate');
+                                result.list[i].sendDate := getJsonString (jSons[i], 'sendDate');
+                                result.list[i].taxType := getJsonString (jSons[i], 'taxType');
+                                result.list[i].purposeType := getJsonString (jSons[i], 'purposeType');
+                                result.list[i].supplyCostTotal := getJsonString (jSons[i], 'supplyCostTotal');
+                                result.list[i].taxTotal := getJsonString (jSons[i], 'taxTotal');
+                                result.list[i].totalAmount := getJsonString (jSons[i], 'totalAmount');
+                                result.list[i].remark1 := getJsonString (jSons[i], 'remark1');
+                                result.list[i].modifyYN := getJsonBoolean (jSons[i], 'modifyYN');
+                                result.list[i].orgNTSConfirmNum := getJsonString (jSons[i], 'orgNTSConfirmNum');
+                                result.list[i].invoiceType := getJsonString (jSons[i], 'invoiceType');
+
+                                result.list[i].purchaseDate := getJsonString (jSons[i], 'purchaseDate');
+                                result.list[i].itemName := getJsonString (jSons[i], 'itemName');
+                                result.list[i].spec := getJsonString (jSons[i], 'spec');
+                                result.list[i].qty := getJsonString (jSons[i], 'qty');
+                                result.list[i].unitCost := getJsonString (jSons[i], 'unitCost');
+                                result.list[i].supplyCost := getJsonString (jSons[i], 'supplyCost');
+                                result.list[i].tax := getJsonString (jSons[i], 'tax');
+                                result.list[i].remark := getJsonString (jSons[i], 'remark');
+
+                                result.list[i].invoicerCorpNum := getJsonString (jSons[i], 'invoicerCorpNum');
+                                result.list[i].invoicerTaxRegID := getJsonString (jSons[i], 'invoicerTaxRegID');
+                                result.list[i].invoicerCorpName := getJsonString (jSons[i], 'invoicerCorpName');
+                                result.list[i].invoicerCEOName := getJsonString (jSons[i], 'invoicerCEOName');
+                                result.list[i].invoicerEmail := getJsonString (jSons[i], 'invoicerEmail');
+
+                                result.list[i].invoiceeCorpNum := getJsonString (jSons[i], 'invoiceeCorpNum');
+                                result.list[i].invoiceeType := getJsonString (jSons[i], 'invoiceeType');
+                                result.list[i].invoiceeTaxRegID := getJsonString (jSons[i], 'invoiceeTaxRegID');
+                                result.list[i].invoiceeCorpName := getJsonString (jSons[i], 'invoiceeCorpName');
+                                result.list[i].invoiceeCEOName := getJsonString (jSons[i], 'invoiceeCEOName');
+                                result.list[i].invoiceeEmail1 := getJsonString (jSons[i], 'invoiceeEmail1');
+                                result.list[i].invoiceeEmail2 := getJsonString (jSons[i], 'invoiceeEmail2');
+
+                                result.list[i].trusteeCorpNum := getJsonString (jSons[i], 'trusteeCorpNum');
+                                result.list[i].trusteeTaxRegID := getJsonString (jSons[i], 'trusteeTaxRegID');
+                                result.list[i].trusteeCorpName := getJsonString (jSons[i], 'trusteeCorpName');
+                                result.list[i].trusteeCEOName := getJsonString (jSons[i], 'trusteeCEOName');
+                                result.list[i].trusteeEmail := getJsonString (jSons[i], 'trusteeEmail');
+                   
+                        end;
+
+                except
+                        on E:Exception do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end
+                                else
+                                begin
+                                        result := THomeTaxTISearchList.Create;
+                                        result.code := -99999999;
+                                        result.message := '결과처리 실패.[Malformed Json]';
+                                        exit;
+                                end;
+
+                        end;
+                end;
+        end;
 end;
 
 function THometaxTIService.RequestJob (CorpNum : string;  queryType:EnumQueryType; DType: String; SDate: String; EDate: String) : string;
@@ -761,8 +979,33 @@ var
         responseJson : string;
 
 begin
-        responseJson := httppost('/HomeTax/Taxinvoice/'+GetEnumName(TypeInfo(EnumQueryType),integer(queryType))+'?DType='+DType+'&&SDate='+SDate+'&&EDate='+EDate, CorpNum, UserID, '', '');
-        result := getJsonString(responseJson, 'jobID');
+        try        
+                responseJson := httppost('/HomeTax/Taxinvoice/'+GetEnumName(TypeInfo(EnumQueryType),integer(queryType))+'?DType='+DType+'&&SDate='+SDate+'&&EDate='+EDate, CorpNum, UserID, '', '');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result := '';
+                                exit;
+                        end;
+                end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                result := '';
+                exit;
+        end
+        else
+        begin
+                result := getJsonString(responseJson, 'jobID');
+                exit;
+        end;
 end;
 
 function THometaxTIService.Summary (CorpNum:string; jobID:string; DocType : Array Of String; TaxType : Array Of String; PurposeType : Array Of String; TaxRegIDType : String; TaxRegID : String; TaxRegIDYN : string) : TTaxinvoiceSummary;
@@ -781,8 +1024,19 @@ var
 begin
         if Not ( length ( jobID ) = 18 ) then
         begin
-                raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 올바르지 않습니다.');
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '작업아이디(jobID)가 올바르지 않습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result := TTaxinvoiceSummary.Create;
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('작업아이디(jobID)가 올바르지 않습니다.');
+                        exit;
+                end;
+
         end;
 
         for i := 0 to High ( DocType ) do
@@ -828,14 +1082,31 @@ begin
                uri := uri + '&&TaxRegIDYN='+TaxRegIDYN;
         end;
 
-        responseJson := httpget(uri, CorpNum, UserID);
-        
-        result := TTaxinvoiceSummary.Create;
+        try
+                responseJson := httpget(uri, CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;
+                end;                
+        end;
 
-        result.count := GetJSonInteger(responseJson, 'count');
-        result.supplyCostTotal := GetJSonInteger(responseJson, 'supplyCostTotal');
-        result.taxTotal := GetJSonInteger(responseJson, 'taxTotal');
-        result.amountTotal := GetJSonInteger(responseJson, 'amountTotal');
+        if LastErrCode <> 0 then
+        begin
+                result := TTaxinvoiceSummary.Create;
+                exit;
+        end
+        else
+        begin        
+                result := TTaxinvoiceSummary.Create;
+                result.count := GetJSonInteger(responseJson, 'count');
+                result.supplyCostTotal := GetJSonInteger(responseJson, 'supplyCostTotal');
+                result.taxTotal := GetJSonInteger(responseJson, 'taxTotal');
+                result.amountTotal := GetJSonInteger(responseJson, 'amountTotal');
+        end;
 end;
 
 
@@ -850,13 +1121,41 @@ var
 begin
         if Not ( length ( NTSConfirmNum ) = 24 ) then
         begin
-                raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result := THomeTaxTaxinvoice.Create;
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('국세청승인번호가 올바르지 않습니다.');
+                        exit;        
+                end;
         end;
 
-        responseJson := httpget('/HomeTax/Taxinvoice/'+NTSConfirmNum, CorpNum, UserID);
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice/'+NTSConfirmNum, CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end;
+                end;
+        end;
 
-        result := jsonToTHometaxTaxinvoice(responseJson);
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
+                result := jsonToTHometaxTaxinvoice(responseJson);
+                exit;
+        end;
 end;
 
 function THometaxTIService.GetXML (CorpNum : String; NTSConfirmNum:String ) : TGetXMLResponse;
@@ -870,20 +1169,66 @@ var
 begin
         if  Not ( length ( NTSConfirmNum ) = 24 ) then
         begin
-                raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result := TGetXMLResponse.Create;
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('국세청승인번호가 올바르지 않습니다.');
+                        exit;
+                end;
         end;
 
-        responseJson := httpget('/HomeTax/Taxinvoice/'+NTSConfirmNum+'?T=xml', CorpNum, UserID);
-
         try
-                result := TGetXMLResponse.Create;
-                result.ResultCode := getJSonInteger(responseJson, 'ResultCode');
-                result.Message := getJSonString(responseJson, 'Message');
-                result.retObject := getJSonString(responseJson, 'retObject');
+                responseJson := httpget('/HomeTax/Taxinvoice/'+NTSConfirmNum+'?T=xml', CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result := TGetXMLResponse.Create;
+                                setLastErrCode(le.code);
+                                setLastErrMessage(le.message);
+                                exit;
+                        end;
+                end;
+        end;
 
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin        
+                try
+                        result := TGetXMLResponse.Create;
+                        result.ResultCode := getJSonInteger(responseJson, 'ResultCode');
+                        result.Message := getJSonString(responseJson, 'Message');
+                        result.retObject := getJSonString(responseJson, 'retObject');
+                except
+                        on E:Exception do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end
+                                else
+                                begin
+                                        result := TGetXMLResponse.Create;
+                                        setLastErrCode(-99999999);
+                                        setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end;
+                        end;
+                end;
         end;
 
 end;
@@ -894,13 +1239,32 @@ var
 begin
         if  Not ( length ( NTSConfirmNum ) = 24 ) then
         begin
-                raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('국세청승인번호가 올바르지 않습니다.');
+                        exit;
+                end;
         end;
-
-        responseJson := httpget('/HomeTax/Taxinvoice/' + NTSConfirmNum + '/PopUp', CorpNum, UserID);
-
-        result := getJSonString(responseJson,'url');
+       
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice/' + NTSConfirmNum + '/PopUp', CorpNum, UserID);
+                result := getJSonString(responseJson,'url');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;
+                end;
+        end;
 end;
 
 function THometaxTIService.CheckCertValidation(CorpNum, UserID: String): TResponse;
@@ -909,26 +1273,46 @@ var
 begin
         if Trim(CorpNum) = '' then
         begin
-                result.code := -99999999;
-                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '연동회원 사업자번호가 입력되지 않았습니다.');
+                        Exit;                       
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                        Exit;
+                end;
         end;
 
         try
                 responseJson := httpget('/HomeTax/Taxinvoice/CertCheck', CorpNum, UserID);
-
-                result.code := getJSonInteger(responseJson,'code');
-                result.message := getJSonString(responseJson,'message');
         except
                 on le : EPopbillException do begin
                         if FIsThrowException then
                         begin
                                 raise EPopbillException.Create(le.code,le.Message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result.code := le.code;
+                                result.message := le.message;
+                                exit;
                         end;
-
-                        result.code := le.code;
-                        result.message := le.Message;
                 end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+        end
+        else
+        begin
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
         end;
 end;
 
@@ -938,40 +1322,80 @@ var
 begin
         if Trim(CorpNum) = '' then
         begin
-                result.code := -99999999;
-                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '연동회원 사업자번호가 입력되지 않았습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                        Exit;
+                end;
+
         end;
+        
         if Trim(DeptUserID) = '' then
         begin
-                result.code := -99999999;
-                result.message := '홈택스 부서사용자 계정 아이디가 입력되지 않았습니다.';
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '홈택스 부서사용자 계정 아이디가 입력되지 않았습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '홈택스 부서사용자 계정 아이디가 입력되지 않았습니다.';
+                        Exit;
+                end;
         end;
+
         if Trim(DeptUserPWD) = '' then
         begin
-                result.code := -99999999;
-                result.message := '홈택스 부서사용자 계정 비밀번호가 입력되지 않았습니다.';
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '홈택스 부서사용자 계정 비밀번호가 입력되지 않았습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '홈택스 부서사용자 계정 비밀번호가 입력되지 않았습니다.';
+                        Exit;
+                end;
         end;
 
         try
                 requestJson := '{"id":"'+EscapeString(DeptUserID)+'","pwd":"'+EscapeString(DeptUserPWD)+'"}';
-
                 responseJson := httppost('/HomeTax/Taxinvoice/DeptUser', CorpNum, UserID, requestJson, '');
-
-                result.code := getJSonInteger(responseJson,'code');
-                result.message := getJSonString(responseJson,'message');
         except
                 on le : EPopbillException do begin
                         if FIsThrowException then
                         begin
                                 raise EPopbillException.Create(le.code,le.Message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result.code := le.code;
+                                result.message := le.Message;
+                                exit;
                         end;
-                        
-                        result.code := le.code;
-                        result.message := le.Message;
                 end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+                exit;
+        end
+        else
+        begin
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
+                exit;
         end;
 end;
 
@@ -981,26 +1405,46 @@ var
 begin
         if Trim(CorpNum) = '' then
         begin
-                result.code := -99999999;
-                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '연동회원 사업자번호가 입력되지 않았습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                        Exit;
+                end;
         end;
 
         try
                 responseJson := httpget('/HomeTax/Taxinvoice/DeptUser', CorpNum, UserID);
-
-                result.code := getJSonInteger(responseJson,'code');
-                result.message := getJSonString(responseJson,'message');
         except
                 on le : EPopbillException do begin
                         if FIsThrowException then
                         begin
                                 raise EPopbillException.Create(le.code,le.Message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result.code := le.code;
+                                result.message := le.Message;
+                                exit;
                         end;
-
-                        result.code := le.code;
-                        result.message := le.Message;
                 end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+        end
+        else
+        begin
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
         end;
 end;
 
@@ -1010,26 +1454,46 @@ var
 begin
         if Trim(CorpNum) = '' then
         begin
-                result.code := -99999999;
-                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '연동회원 사업자번호가 입력되지 않았습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                        Exit;
+                end;
         end;
 
         try
                 responseJson := httpget('/HomeTax/Taxinvoice/DeptUser/Check', CorpNum, UserID);
-
-                result.code := getJSonInteger(responseJson,'code');
-                result.message := getJSonString(responseJson,'message');
         except
                 on le : EPopbillException do begin
                         if FIsThrowException then
                         begin
                                 raise EPopbillException.Create(le.code,le.Message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result.code := le.code;
+                                result.message := le.Message;
+                                exit;                        
                         end;
-
-                        result.code := le.code;
-                        result.message := le.Message;
                 end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+        end
+        else
+        begin
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
         end;
 end;
 
@@ -1039,16 +1503,21 @@ var
 begin
         if Trim(CorpNum) = '' then
         begin
-                result.code := -99999999;
-                result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
-                Exit;
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '연동회원 사업자번호가 입력되지 않았습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '연동회원 사업자번호가 입력되지 않았습니다.';
+                        Exit;
+                end;
         end;
 
         try
                 responseJson := httppost('/HomeTax/Taxinvoice/DeptUser', CorpNum, UserID, '', 'DELETE');
-
-                result.code := getJSonInteger(responseJson,'code');
-                result.message := getJSonString(responseJson,'message');
         except
                 on le : EPopbillException do begin
                         if FIsThrowException then
@@ -1060,6 +1529,19 @@ begin
                         result.message := le.Message;
                 end;
         end;
+
+        if LastErrCode <> 0 then
+        begin
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+                exit;
+        end
+        else
+        begin
+                result.code := getJSonInteger(responseJson,'code');
+                result.message := getJSonString(responseJson,'message');
+                exit;
+        end;       
 end;
 
 end.
