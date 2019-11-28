@@ -7,7 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2016-06-10
-* Updated : 2019-05-03
+* Updated : 2019-11-28
 * Thanks for your interest. 
 *=================================================================================
 *)
@@ -298,6 +298,9 @@ type
 
                 // 홈택스 전자세금계산서 보기 팝업 URL
                 function GetPopUpURL(CorpNum : String; NTSConfirmNum : String; UserID : String = '') : String;
+
+                // 홈택스 전자세금계산서 인쇄 팝업 URL
+                function GetPrintURL(CorpNum : String; NTSConfirmNum : String; UserID : String = '') : String;                
 
                 // 홈택스 공인인증서 로그인 테스트
                 function CheckCertValidation(CorpNum : String; UserID : String = '') : TResponse;
@@ -1255,6 +1258,40 @@ begin
        
         try
                 responseJson := httpget('/HomeTax/Taxinvoice/' + NTSConfirmNum + '/PopUp', CorpNum, UserID);
+                result := getJSonString(responseJson,'url');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;
+                end;
+        end;
+end;
+
+function THometaxTIService.GetPrintURL(CorpNum, NTSConfirmNum, UserID: String): String;
+var
+        responseJson : String;
+begin
+        if  Not ( length ( NTSConfirmNum ) = 24 ) then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '국세청승인번호가 올바르지 않습니다.');
+                        Exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('국세청승인번호가 올바르지 않습니다.');
+                        exit;
+                end;
+        end;
+       
+        try
+                responseJson := httpget('/HomeTax/Taxinvoice/' + NTSConfirmNum + '/Print', CorpNum, UserID);
                 result := getJSonString(responseJson,'url');
         except
                 on le : EPopbillException do begin
