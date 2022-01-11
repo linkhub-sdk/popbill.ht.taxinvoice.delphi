@@ -5,7 +5,7 @@
 * to accomplish authentication APIs.
 *
 * http://www.popbill.com
-* Author : Jeong Yohan (code@linkhub.co.kr)
+* Author : Jeong Yohan (code@linkhubcorp.com)
 * Written : 2016-06-10
 * Updated : 2019-11-28
 * Thanks for your interest. 
@@ -283,12 +283,12 @@ type
                 // 정액제 상태 확인
                 function GetFlatRateState (CorpNum : string; UserID: String ) : THometaxTIFlatRate; overload;
 
-                // 홈택스 공인인증서 등록 URL
+                // 홈택스 공동인증서 등록 URL
                 function GetCertificatePopUpURL(CorpNum: string; UserID : String = '') : string;
 
-                // 홈택스 공인인증서 만료일자 확인
+                // 홈택스 공동인증서 만료일자 확인
                 function GetCertificateExpireDate (CorpNum : string) : string; overload;
-                // 홈택스 공인인증서 만료일자 확인
+                // 홈택스 공동인증서 만료일자 확인
                 function GetCertificateExpireDate (CorpNum : string; UserID: String) : string; overload;
 
                 // 홈택스 전자세금계산서 보기 팝업 URL
@@ -297,7 +297,7 @@ type
                 // 홈택스 전자세금계산서 인쇄 팝업 URL
                 function GetPrintURL(CorpNum : String; NTSConfirmNum : String; UserID : String = '') : String;                
 
-                // 홈택스 공인인증서 로그인 테스트
+                // 홈택스 공동인증서 로그인 테스트
                 function CheckCertValidation(CorpNum : String; UserID : String = '') : TResponse;
 
                 // 부서사용자 계정등록
